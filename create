@@ -11,6 +11,7 @@ MOUNT_PODMAN=false
 MOUNT_DOCKER=false
 CREATE_ARGS=()
 ROOT_MODE=false
+ENTER_SCRIPT="bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/distrobox/main/enter)"
 
 # Parsing des arguments
 while [[ $# -gt 0 ]]; do
@@ -73,7 +74,6 @@ if [[ -z "$IMAGE" ]]; then
   exit 1
 fi
 
-ENTER_SCRIPT="./enter"
 CUSTOM_HOME="$HOME/Distroboxes/$NAME"
 mkdir -p "$CUSTOM_HOME"
 
