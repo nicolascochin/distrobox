@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Valeurs par défaut
+NAME=""
+PACKAGES_TO_INSTALL=(git gcc)
+IMAGE=""
+INSTALL_DOCKER=false
+MOUNT_PODMAN=false
+MOUNT_DOCKER=false
+CREATE_ARGS=()
+ROOT_MODE=false
+
+# Parsing des arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  --name)
+    NAME="$2"
+    shift 2
+    ;;
+  --image)
+    IMAGE="$2"
+    shift 2
+    ;;
+  --package)
+    PACKAGES_TO_INSTALL+=("$2")
+    shift 2
+    ;;
+  --docker)
+    INSTALL_DOCKER=true
+    ROOT_MODE=true
+    shift
+    ;;
+  --host-podman)
+    MOUNT_PODMAN=true
+    shift
+    ;;
+  --host-docker)
+    MOUNT_DOCKER=true
+    shift
+    ;;
+  --root)
+    ROOT_MODE=true
+    shift
+    ;;
+  *)
+    # echo "Unkown option: $1"
+    # exit 1
+    CREATE_ARGS+=($1)
+    shift
+    ;;
+  esac
+done
+
+ROOT=$([[ $ROOT_MODE == true ]] && echo "--root" || echo "")
+
+if [[ -z "$NAME" ]]; then
+  read -p "Enter a distrobox name: " NAME
+fi
+
+if [[ -z "$NAME" ]]; then
+  echo "Error: No name was given"
+  exit 1
+fi
+
+if [[ -z "$IMAGE" ]]; then
+  read -p "Enter an image: " IMAGE
+fi
+
+if [[ -z "$IMAGE" ]]; then
+  echo "Error: no image was given"
+  exit 1
+fi
+
+ENTER_SCRIPT="./enter"
+CUSTOM_HOME="$HOME/Distroboxes/$NAME"
+mkdir -p "$CUSTOM_HOME"
+
+CREATE_ARGS+=(--home "$CUSTOM_HOME")
+CREATE_ARGS+=(--name "$NAME")
+CREATE_ARGS+=(--image "$IMAGE")
+
+if [[ $INSTALL_DOCKER == true ]]; then
+  echo "setup docker mode"
+  CREATE_ARGS+=(--init)
+  CREATE_ARGS+=(--unshare-all)
+
+  PACKAGES_TO_INSTALL+=(systemd)
+fi
+
+# IFS=','
+CREATE_ARGS+=(--additional-packages "${PACKAGES_TO_INSTALL[*]}")
+# unset IFS
+
+# CREATE_ARGS+=(--additional-packages "\"${PACKAGES_TO_INSTALL[*]}\"")
+
+if [[ -d "$HOME/Workspace" ]]; then
+  CREATE_ARGS+=(--volume "$HOME/Workspace:$CUSTOM_HOME/Workspace:rw")
+fi
+
+distrobox create $ROOT "${CREATE_ARGS[@]}"
+
+# echo "distrobox create \"${CREATE_ARGS[@]}\""
+# exit
+# echo "distrobox create ${CREATE_ARGS[@]}" | bash
+
+ZSH= $ENTER_SCRIPT $NAME $ROOT -- bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/setup_env/main/setup) --shell --neovim'
+if [[ $MOUNT_PODMAN == true ]]; then
+  echo "mount podman"
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman-compose'
+fi
+
+install_docker_debian() {
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt update'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt install ca-certificates'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo install -m 0755 -d /etc/apt/keyrings'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo chmod a+r /etc/apt/keyrings/docker.asc'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt update'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo systemctl enable docker.service'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo systemctl start docker.service'
+  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo usermod -aG docker $USER'
+}
+
+if [[ $INSTALL_DOCKER == true ]]; then
+  case $(./enter bar --root -- bash -c '. /etc/os-release && echo $ID') in
+  ubuntu | debian)
+    echo "Install Docker"
+    install_docker_debian
+    ;;
+  *)
+    echo "Docker installation receipe not yet provided"
+    ;;
+  esac
+  echo "Install Docker"
+
+fi
+echo "✅ Distrobox '$NAME' créée avec succès."

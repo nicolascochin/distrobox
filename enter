@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -e
+
+# ROOT_MODE=
+NAME="$1"
+shift
+
+# while [[ $# -gt 0 ]]; do
+#   case "$1" in
+#   --root)
+#     ROOT_MODE="--root"
+#     shift
+#     ;;
+#   *)
+#     echo "Unkown option: $1"
+#     exit 1
+#     ;;
+#   esac
+# done
+#
+
+if [[ -z "$NAME" ]]; then
+  read -p "Enter a distrobox name: " NAME
+fi
+
+if [[ -z "$NAME" ]]; then
+  echo "Error: No name was given"
+  exit 1
+fi
+
+distrobox enter --no-workdir --clean-path --name "$NAME" "$@"

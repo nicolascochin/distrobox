@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e
+
+NAME="$1"
+shift
+
+if [[ -z "$NAME" ]]; then
+  read -p "Enter a distrobox name: " NAME
+fi
+
+if [[ -z "$NAME" ]]; then
+  echo "Error: No name was given"
+  exit 1
+fi
+
+distrobox stop $NAME "$@" && distrobox rm $NAME "$@" && rm -rf ~/Distroboxes/$NAME
