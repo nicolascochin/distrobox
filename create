@@ -133,7 +133,7 @@ install_docker_debian() {
 }
 
 if [[ $INSTALL_DOCKER == true ]]; then
-  case $(./enter bar --root -- bash -c '. /etc/os-release && echo $ID') in
+  case $(ENTER_SCRIPT $NAME $ROOT -- bash -c '. /etc/os-release && echo $ID') in
   ubuntu | debian)
     echo "Install Docker"
     install_docker_debian
