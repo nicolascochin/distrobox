@@ -11,7 +11,10 @@ MOUNT_PODMAN=false
 MOUNT_DOCKER=false
 CREATE_ARGS=()
 ROOT_MODE=false
-ENTER_SCRIPT="bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/distrobox/main/enter)"
+
+ENTER_SCRIPT() {
+  bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/distrobox/main/enter) "$@"
+}
 
 # Parsing des arguments
 while [[ $# -gt 0 ]]; do
@@ -105,28 +108,28 @@ distrobox create $ROOT "${CREATE_ARGS[@]}"
 # exit
 # echo "distrobox create ${CREATE_ARGS[@]}" | bash
 
-ZSH= $ENTER_SCRIPT $NAME $ROOT -- bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/setup_env/main/setup) --shell --neovim'
+ZSH= ENTER_SCRIPT $NAME $ROOT -- bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/setup_env/main/setup) --shell --neovim'
 if [[ $MOUNT_PODMAN == true ]]; then
   echo "mount podman"
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman-compose'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman-compose'
 fi
 
 install_docker_debian() {
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt update'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt install ca-certificates'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo install -m 0755 -d /etc/apt/keyrings'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo chmod a+r /etc/apt/keyrings/docker.asc'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'echo \
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt update'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt install ca-certificates'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo install -m 0755 -d /etc/apt/keyrings'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo chmod a+r /etc/apt/keyrings/docker.asc'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt update'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo systemctl enable docker.service'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo systemctl start docker.service'
-  $ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo usermod -aG docker $USER'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt update'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo systemctl enable docker.service'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo systemctl start docker.service'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo usermod -aG docker $USER'
 }
 
 if [[ $INSTALL_DOCKER == true ]]; then
