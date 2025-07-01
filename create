@@ -4,7 +4,11 @@ set -e
 
 # Valeurs par défaut
 NAME=""
-PACKAGES_TO_INSTALL=(git gcc)
+PACKAGES_TO_INSTALL=(
+  git
+  gcc
+  gettext # for envsubst
+)
 IMAGE=""
 INSTALL_DOCKER=false
 MOUNT_PODMAN=false
@@ -101,6 +105,7 @@ CREATE_ARGS+=(--additional-packages "${PACKAGES_TO_INSTALL[*]}")
 if [[ -d "$HOME/Workspace" ]]; then
   CREATE_ARGS+=(--volume "$HOME/Workspace:$CUSTOM_HOME/Workspace:rw")
 fi
+CREATE_ARGS+=(--volume "$HOME/.ssh:$CUSTOM_HOME/.ssh:ro")
 
 distrobox create $ROOT "${CREATE_ARGS[@]}"
 
@@ -139,7 +144,7 @@ if [[ $INSTALL_DOCKER == true ]]; then
     install_docker_debian
     ;;
   *)
-    echo "Docker installation receipe not yet provided"
+    echo "Docker installation recipe not yet provided"
     ;;
   esac
   echo "Install Docker"
