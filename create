@@ -17,7 +17,7 @@ CREATE_ARGS=()
 ROOT_MODE=false
 
 ENTER_SCRIPT() {
-  curl -fsSL https://raw.githubusercontent.com/nicolascochin/distrobox/main/enter | bash -s -- "$@"
+  bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/distrobox/main/enter) "$@"
 }
 
 # Parsing des arguments
@@ -113,7 +113,7 @@ distrobox create $ROOT "${CREATE_ARGS[@]}"
 # exit
 # echo "distrobox create ${CREATE_ARGS[@]}" | bash
 
-ZSH= ENTER_SCRIPT $NAME $ROOT -- bash -c 'curl -fsSL https://raw.githubusercontent.com/nicolascochin/setup_env/main/setup | bash -s -- --shell --neovim'
+ZSH= ENTER_SCRIPT $NAME $ROOT -- bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/setup_env/main/setup) --shell --neovim'
 if [[ $MOUNT_PODMAN == true ]]; then
   echo "mount podman"
   ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo ln -s /usr/bin/distrobox-host-exec /usr/local/bin/podman'
