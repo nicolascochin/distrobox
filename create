@@ -140,5 +140,6 @@ install_docker_debian() {
 if [[ $INSTALL_DOCKER == true ]]; then
   echo "Install Docker..."
   ENTER_SCRIPT $NAME $ROOT -- bash -c 'curl -fsSL https://get.docker.com | sh'
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'sudo usermod -aG docker $USER'
 fi
 echo "✅ Distrobox '$NAME' créée avec succès."
