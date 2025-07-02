@@ -138,16 +138,7 @@ install_docker_debian() {
 }
 
 if [[ $INSTALL_DOCKER == true ]]; then
-  case $(ENTER_SCRIPT $NAME $ROOT -- bash -c '. /etc/os-release && echo $ID') in
-  ubuntu | debian)
-    echo "Install Docker"
-    install_docker_debian
-    ;;
-  *)
-    echo "Docker installation recipe not yet provided"
-    ;;
-  esac
-  echo "Install Docker"
-
+  echo "Install Docker..."
+  ENTER_SCRIPT $NAME $ROOT -- bash -c 'curl -fsSL https://get.docker.com | sh'
 fi
 echo "✅ Distrobox '$NAME' créée avec succès."
