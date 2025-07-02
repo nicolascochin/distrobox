@@ -10,6 +10,7 @@ PACKAGES_TO_INSTALL=(
   gettext # for envsubst
 )
 IMAGE=""
+HOST_HOME="$HOME"
 INSTALL_DOCKER=false
 MOUNT_PODMAN=false
 MOUNT_DOCKER=false
@@ -52,6 +53,10 @@ while [[ $# -gt 0 ]]; do
     ROOT_MODE=true
     shift
     ;;
+  --host_home)
+    HOST_HOME="$2"
+    shift 2
+    ;;
   *)
     # echo "Unkown option: $1"
     # exit 1
@@ -69,15 +74,15 @@ test -z "$NAME" && echo "Error: No name was given" && exit 1
 test -z "$IMAGE" && read -p "Enter an image: " IMAGE
 test -z "$IMAGE" && echo "Error: no image was given" && exit 1
 
-CUSTOM_HOME="$HOME/Distroboxes/$NAME"
+CUSTOM_HOME="$HOST_HOME/Distroboxes/$NAME"
 mkdir -p "$CUSTOM_HOME"
 
 # Setup arguments for creation
 CREATE_ARGS+=(--home "$CUSTOM_HOME")
 CREATE_ARGS+=(--name "$NAME")
 CREATE_ARGS+=(--image "$IMAGE")
-test -d "$HOME/Workspace" && CREATE_ARGS+=(--volume "$HOME/Workspace:$CUSTOM_HOME/Workspace:rw")
-test -d "$HOME/.ssh" && CREATE_ARGS+=(--volume "$HOME/.ssh:$CUSTOM_HOME/.ssh:ro")
+test -d "$HOST_HOME/Workspace" && CREATE_ARGS+=(--volume "$HOST_HOME/Workspace:$CUSTOM_HOME/Workspace:rw")
+test -d "$HOST_HOME/.ssh" && CREATE_ARGS+=(--volume "$HOST_HOME/.ssh:$CUSTOM_HOME/.ssh:ro")
 
 if [[ $INSTALL_DOCKER == true ]]; then
   CREATE_ARGS+=(--init)
