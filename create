@@ -81,7 +81,7 @@ mkdir -p "$CUSTOM_HOME"
 CREATE_ARGS+=(--home "$CUSTOM_HOME")
 CREATE_ARGS+=(--name "$NAME")
 CREATE_ARGS+=(--image "$IMAGE")
-test -d "$HOST_HOME/Workspace" && CREATE_ARGS+=(--volume "$HOST_HOME/Workspace:$CUSTOM_HOME/Workspace:rw")
+test -d "$HOST_HOME/Workspaces" && CREATE_ARGS+=(--volume "$HOST_HOME/Workspaces:$CUSTOM_HOME/Workspaces:rw")
 test -d "$HOST_HOME/.ssh" && CREATE_ARGS+=(--volume "$HOST_HOME/.ssh:$CUSTOM_HOME/.ssh:ro")
 
 if [[ $INSTALL_DOCKER == true ]]; then
