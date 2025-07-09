@@ -81,7 +81,7 @@ mkdir -p "$CUSTOM_HOME"
 CREATE_ARGS+=(--home "$CUSTOM_HOME")
 CREATE_ARGS+=(--name "$NAME")
 CREATE_ARGS+=(--image "$IMAGE")
-test -d "$HOST_HOME/Workspaces" && CREATE_ARGS+=(--volume "$HOST_HOME/Workspaces:$CUSTOM_HOME/Workspaces:rw")
+// test -d "$HOST_HOME/Workspaces" && CREATE_ARGS+=(--volume "$HOST_HOME/Workspaces:$CUSTOM_HOME/Workspaces:rw")
 test -d "$HOST_HOME/.ssh" && CREATE_ARGS+=(--volume "$HOST_HOME/.ssh:$CUSTOM_HOME/.ssh:ro")
 
 if [[ $INSTALL_DOCKER == true ]]; then
@@ -99,6 +99,7 @@ distrobox create $ROOT "${CREATE_ARGS[@]}"
 # Setup the distrobox
 #####
 ZSH= ENTER_SCRIPT $NAME $ROOT -- bash -c 'bash <(curl -fsSL https://raw.githubusercontent.com/nicolascochin/setup_env/main/setup) --shell --neovim'
+test -d "$HOST_HOME/Workspaces" && ENTER_SCRIPT $NAME $ROOT -- bash -c "ln -s $HOST_HOME/Workspaces $CUSTOM_HOME/Workspaces"
 
 if [[ $MOUNT_PODMAN == true ]]; then
   echo "mount podman"
